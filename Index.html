@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivilCalc – Free Construction Tools for Engineers</title>
+<meta name="description" content="Free online calculators for civil engineers, architects and site engineers in India. BBS, concrete, tiles, steel, plaster and more.">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f0f4f8;
+  --white: #ffffff;
+  --surface: #e8eef5;
+  --border: #d1dbe8;
+  --text: #1a2332;
+  --muted: #6b7c93;
+  --accent: #1d4ed8;
+  --accent-light: #eff6ff;
+  --accent-hover: #1e40af;
+  --ok: #16a34a; --ok-bg: #f0fdf4; --ok-border: #86efac;
+  --warn: #d97706; --warn-bg: #fffbeb; --warn-border: #fcd34d;
+  --err: #dc2626; --err-bg: #fef2f2; --err-border: #fca5a5;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+nav {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 0 20px; height: 58px; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0; z-index: 200; box-shadow: var(--shadow-sm);
+}
+.logo { font-size: 20px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+.logo span { color: var(--text); }
+.nav-tag { background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+.ad-strip { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 20px; text-align: center; }
+.ad-block { background: var(--white); border: 1.5px dashed var(--border); border-radius: 6px; max-width: 728px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 1px; }
+.hero { background: linear-gradient(135deg,#1d4ed8 0%,#1e40af 60%,#1e3a8a 100%); color: white; padding: 32px 20px 28px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content:''; position:absolute; top:-50%; right:-10%; width:400px; height:400px; background:rgba(255,255,255,0.04); border-radius:50%; }
+.hero h1 { font-size: clamp(24px,6vw,42px); font-weight: 800; letter-spacing: -1px; line-height: 1.1; }
+.hero p { margin-top: 8px; font-size: 14px; opacity: 0.8; font-weight: 500; }
+.badge-row { margin-top: 14px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.badge { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
+.main { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; display: grid; gap: 20px; }
+.picker-card { background: var(--white); border-radius: 14px; box-shadow: var(--shadow); padding: 20px; }
+.card-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.card-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(130px,1fr)); gap: 8px; }
+.tool-btn { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 8px; cursor: pointer; text-align: center; transition: all 0.18s; outline: none; }
+.tool-btn:hover { border-color: var(--accent); background: var(--accent-light); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(29,78,216,0.12); }
+.tool-btn.active { border-color: var(--accent); background: var(--accent); color: white; box-shadow: 0 4px 14px rgba(29,78,216,0.3); }
+.tool-btn.active .t-tag { color: rgba(255,255,255,0.7); }
+.t-icon { font-size: 24px; margin-bottom: 6px; }
+.t-name { font-size: 11.5px; font-weight: 700; line-height: 1.3; }
+.t-tag { font-size: 10px; color: var(--muted); margin-top: 3px; font-family: 'JetBrains Mono',monospace; font-weight: 500; }
+.calc-card { background: var(--white); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; display: none; animation: slideIn 0.25s ease; }
+.calc-card.open { display: block; }
+@keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.calc-head { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; background: var(--surface); }
+.calc-head-icon { width:46px;height:46px;background:var(--white);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:var(--shadow-sm);flex-shrink:0; }
+.calc-head h2 { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+.calc-head p { font-size: 12px; color: var(--muted); margin-top: 3px; font-weight: 500; }
+.calc-body { padding: 22px; }
+.fields-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(190px,1fr)); gap: 14px; margin-bottom: 18px; }
+.field label { display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:7px;letter-spacing:0.3px;text-transform:uppercase; }
+.field input,.field select { width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:11px 14px;font-size:15px;font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--text);outline:none;transition:all 0.15s; }
+.field input:focus,.field select:focus { border-color:var(--accent);background:white;box-shadow:0 0 0 3px rgba(29,78,216,0.1); }
+.calc-btn { width:100%;background:var(--accent);color:white;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;letter-spacing:0.5px;transition:all 0.18s; }
+.calc-btn:hover { background:var(--accent-hover);box-shadow:0 4px 16px rgba(29,78,216,0.3); }
+.result-box { margin-top:18px;border-radius:12px;overflow:hidden;border:1.5px solid var(--border);display:none; }
+.result-box.show { display:block;animation:slideIn 0.25s ease; }
+.result-head { padding:10px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:1px; }
+.status-dot { width:8px;height:8px;border-radius:50%; }
+.result-box.ok { border-color:var(--ok-border); }
+.result-box.ok .result-head { background:var(--ok-bg);color:var(--ok); }
+.result-box.ok .status-dot { background:var(--ok); }
+.result-box.warn { border-color:var(--warn-border); }
+.result-box.warn .result-head { background:var(--warn-bg);color:var(--warn); }
+.result-box.warn .status-dot { background:var(--warn); }
+.result-box.err { border-color:var(--err-border); }
+.result-box.err .result-head { background:var(--err-bg);color:var(--err); }
+.result-box.err .status-dot { background:var(--err); }
+.result-rows { background:var(--white); }
+.result-row { display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:1px solid var(--surface);gap:12px; }
+.result-row:last-child { border-bottom:none; }
+.r-label { font-size:13px;color:var(--muted);font-weight:500;flex:1; }
+.r-val { font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--text);text-align:right; }
+.r-val.highlight { font-size:19px;color:var(--accent); }
+.r-val.ok-val { color:var(--ok); }
+.r-val.warn-val { color:var(--warn); }
+.r-val.err-val { color:var(--err); }
+.stag { display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px; }
+.stag.ok { background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-border); }
+.stag.warn { background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border); }
+.stag.err { background:var(--err-bg);color:var(--err);border:1px solid var(--err-border); }
+.formula-note { margin-top:14px;background:var(--accent-light);border-left:3px solid var(--accent);border-radius:6px;padding:10px 14px;font-size:12px;color:#374151;font-family:'JetBrains Mono',monospace;font-weight:500;line-height:1.6; }
+.checks { margin-top:14px;display:flex;flex-wrap:wrap;gap:8px; }
+.check-item { display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600; }
+.check-item.pass { background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-border); }
+.check-item.fail { background:var(--err-bg);color:var(--err);border:1px solid var(--err-border); }
+.ad-rect { background:var(--white);border:1.5px dashed var(--border);border-radius:10px;height:250px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:1px; }
+footer { background:var(--white);border-top:1px solid var(--border);text-align:center;padding:20px;font-size:12px;color:var(--muted);font-weight:500; }
+footer strong { color:var(--accent); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Civil<span>Calc</span></div>
+  <div class="nav-tag">10 FREE TOOLS</div>
+</nav>
+
+<div class="ad-strip">
+  <div class="ad-block">GOOGLE ADSENSE 728×90 — Paste your ad code here</div>
+</div>
+
+<div class="hero">
+  <h1>Free Civil & Architecture<br>Calculators</h1>
+  <p>For Site Engineers · Architects · Contractors · Students</p>
+  <div class="badge-row">
+    <div class="badge">✓ BBS Calculator</div>
+    <div class="badge">✓ IS Code Checks</div>
+    <div class="badge">✓ OK / Warning / Error Status</div>
+    <div class="badge">✓ Mobile Friendly</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="picker-card">
+    <div class="card-label">Choose Calculator</div>
+    <div class="tools-grid">
+      <button class="tool-btn" onclick="openTool('bbs')"><div class="t-icon">🔩</div><div class="t-name">Bar Bending Schedule</div><div class="t-tag">BBS</div></button>
+      <button class="tool-btn" onclick="openTool('concrete')"><div class="t-icon">🏗️</div><div class="t-name">Concrete Volume</div><div class="t-tag">RCC</div></button>
+      <button class="tool-btn" onclick="openTool('steel')"><div class="t-icon">⚖️</div><div class="t-name">Steel Weight</div><div class="t-tag">STEEL</div></button>
+      <button class="tool-btn" onclick="openTool('brick')"><div class="t-icon">🧱</div><div class="t-name">Brick & Mortar</div><div class="t-tag">MASONRY</div></button>
+      <button class="tool-btn" onclick="openTool('tile')"><div class="t-icon">🟫</div><div class="t-name">Tile Quantity</div><div class="t-tag">FLOORING</div></button>
+      <button class="tool-btn" onclick="openTool('plaster')"><div class="t-icon">🪣</div><div class="t-name">Plaster Quantity</div><div class="t-tag">FINISHING</div></button>
+      <button class="tool-btn" onclick="openTool('paint')"><div class="t-icon">🎨</div><div class="t-name">Paint Quantity</div><div class="t-tag">FINISHING</div></button>
+      <button class="tool-btn" onclick="openTool('area')"><div class="t-icon">📐</div><div class="t-name">Carpet Area</div><div class="t-tag">AREA</div></button>
+      <button class="tool-btn" onclick="openTool('stair')"><div class="t-icon">🪜</div><div class="t-name">Staircase Check</div><div class="t-tag">ARCH</div></button>
+      <button class="tool-btn" onclick="openTool('excavation')"><div class="t-icon">🚜</div><div class="t-name">Excavation Volume</div><div class="t-tag">EARTHWORK</div></button>
+    </div>
+  </div>
+
+  <!-- 1. BBS -->
+  <div class="calc-card" id="calc-bbs">
+    <div class="calc-head"><div class="calc-head-icon">🔩</div><div><h2>Bar Bending Schedule Calculator</h2><p>TMT/Fe500 steel weight — IS 1786</p></div></div>
+    <div class="calc-body">
+      <div class="fields-grid">
+        <div class="field"><label>Bar Diameter (mm)</label><select id="bbs-dia"><option>8</option><option>10</option><option>12</option><option>16</option><option>20</option><option>25</option><option>32</option></select></div>
+        <div class="field"><label>Number of Bars</label><input type="number" id="bbs-nos" value="10" min="1"></div>
+        <div class="field"><label>Length per Bar (m)</label><input type="number" id="bbs-len" value="3.5" step="0.01" min="0.1"></div>
+      </div>
+      <button class="calc-btn" onclick="calcBBS()">▶ CALCULATE WEIGHT</button>
+      <div class="result-box" id="res-bbs">
+        <div class="result-head"><div class="status-dot"></div><span id="bbs-status-txt">RESULT</span></div>
+        <div class="result-rows">
+          <div class="result-row"><span class="r-label">Weight per Meter (D²/162)</span><span class="r-val" id="bbs-wpm">—</span></div>
+          <div class="result-row"><span class="r-label">Total Length</span><span class="r-val" id="bbs-totlen">—</span></div>
+          <div class="result-row"><span class="r-label">Total Weight</span><span class="r-val highlight" id="bbs-wt">—</span></div>
+        </div>
+      </div>
+      <div class="checks" id="bbs-checks" style="display:none"></div>
+      <div class="formula-note">Weight (kg/m) = D² ÷ 162 | D = diameter in mm | Standard bar = 12m</div>
+    </div>
+  </div>
+
+  <!-- 2. CONCRETE -->
+  <div class="calc-card" id="calc-concrete">
+    <div class="calc-head"><div class="calc-head-icon">🏗️</div><div><h2>Concrete Volume Calculator</h2><p>Cement, sand & aggregate — IS 456</p></div></div>
+    <div class="calc-body">
+      <div class="fields-grid">
+        <div class="field"><label>Length (m)</label><input type="number" id="con-l" value="5" step="0.01"></div>
+        <div class="field"><label>Width (m)</label><input type="number" id="con-w" value="3" step="0.01"></div>
+        <div class="field"><label>Depth (m)</label><input type="number" id="con-d" value="0.15" step="0.001"></div>
+        <div class="field"><label>Grade of Concrete</label><select id="con-grade"><option value="10,1:3:6">M10 – 1:3:6</option><option value="15,1:2:4" selected>M15 – 1:2:4</option><option value="20,1:1.5:3">M20 – 1:1.5:3</option><option value="25,1:1:2">M25 – 1:1:2</option></select></div>
+        <div class="field"><label>Use For</label><select id="con-use"><option value="rcc">RCC Slab/Beam/Column</option><option value="foundation">Foundation / Footing</option><option value="pcc">PCC / Pathway</option></select></div>
+      </div>
+      <button class="calc-btn" onclick="calcConcrete()">▶ CALCULATE MATERIALS</button>
+      <div class="result-box" id="res-con">
+        <div class="result-head"><div class="status-dot"></div><span id="con-status-txt">RESULT</span></div>
+        <div class="result-rows">
+          <div class="result-row"><span class="r-label">Wet Volume</span><span class="r-val" id="con-wet">—</span></div>
+          <div class="result-row"><span class="r-label">Dry Volume (×1.54)</span><span class="r-val" id="con-dry">—</span></div>
+          <div class="result-row"><span class="r-label">Cement Bags (50 kg each)</span><span class="r-val highlight" id="con-cement">—</span></div>
+          <div class="result-row"><span class="r-label">Sand</span><span class="r-val" id="con-sand">—</span></div>
+          <div class="result-row"><span class="r-label">Coarse Aggregate</span><span class="r-val" id="con-agg">—</span></div>
+          <div class="result-row"><span class="r-label">Grade Adequacy</span><span class="r-val" id="con-grade-check">—</span></div>
+        </div>
+      </div>
+      <div class="checks" id="con-checks" style="display:none"></div>
+      <div class="formula-note">IS 456: Min M20 for RCC slabs/beams/columns | Dry vol = Wet × 1.54 | Add 5% wastage</div>
+    </div>
+  </div>
+
+  <!-- 3. STEEL -->
+  <div class="calc-card" id="calc-steel">
+    <div class="calc-head"><div class="calc-head-icon">⚖️</div><div><h2>Steel Weight Calculator</h2><p>Round, Flat, Square, Hollow Pipe sections</p></div></div>
+    <div class="calc-body">
+      <div class="fields-grid">
+        <div class="field"><label>Section Type</label><select id="st-type" onchange="toggleSteelFields()"><option value="round">Round Bar</option><option value="flat">Flat Bar</option><option value="square">Square Bar</option><option value="pipe">Hollow Pipe</option></select></div>
+        <div class="field" id="st-d-wrap"><label id="st-d-label">Diameter (mm)</label><input type="number" id="st-d" value="25"></div>
+        <div class="field" id="st-w-wrap" style="display:none"><label>Width (mm)</label><input type="number" id="st-w" value="50"></div>
+        <div class="field" id="st-t-wrap" style="display:none"><label>Thickness (mm)</label><input type="number" id="st-t" value="6"></div>
+        <div class="field" id="st-od-wrap" style="display:none"><label>Outer Diameter (mm)</label><input type="number" id="st-od" value="60"></div>
+        <div class="field" id="st-thick-wrap" style="display:none"><label>Wall Thickness (mm)</label><input type="number" id="st-thick" value="4"></div>
+        <div class="field"><label>Length (m)</label><input type="number" id="st-len" value="6" step="0.01"></div>
+        <div class="field"><label>Quantity (nos)</label><input type="number" id="st-nos" value="1"></div>
+      </div>
+      <button class="calc-btn" onclick="calcSteel()">▶ CALCULATE WEIGHT</button>
+      <div class="result-box" id="res-steel">
+        <div class="result-head"><div class="status-dot"></div><span id="st-status-txt">RESULT</span></div>
+        <div class="result-rows">
+          <div class="result-row"><span class="r-label">Weight per Meter</span><span class="r-val" id="st-wpm">—</span></div>
+          <div class="result-row"><span class="r-label">Total Weight</span><span class="r-val highlight" id="st-wt">—</span></div>
+          <div class="result-row"><span class="r-label">In Metric Tonnes</span><span class="r-val" id="st-ton">—</span></div>
+        </div>
+      </div>
+      <div class="formula-note">Steel density = 7850 kg/m³ | 1 MT = 1000 kg | Standard pipe/bar = 6m</div>
+    </div>
+  </div>
+
+  <!-- 4. BRICK -->
+  <div class="calc-card" id="calc-brick">
+    <div class="calc-head"><div class="calc-head-icon">🧱</div><div><h2>Brick & Mortar Calculator</h2><p>Number of bricks + mortar — IS 2212</p></div></div>
+    <div class="calc-body">
+      <div class="fields-grid">
+        <div class="field"><label>Wall Length (m)</label><input type="number" id="br-l" value="5" step="0.01"></div>
+        <div class="field"><label>Wall Height (m)</label><input type="number" id="br-h" value="3" step="0.01"></div>
+        <div class="field"><label>Wall Thickness</label><select id="br-th"><option value="0.115">Half Brick – 115mm</option><option value="0.23" selected>Full Brick – 230mm</option><option value="0.345">1.5 Brick – 345mm</option></select></div>
+        <div class="field"><label>Mortar Ratio</label><select id="br-ratio"><option value="1:3">1:3 – Waterproof/External</option><option value="1:4" selected>1:4 – Standard</option><option value="1:6">1:6 – Internal/Non-load</option></select></div>
+        <div class="field"><label>Wastage %</label><select id="br-waste"><option value="5">5%</option><option value="10" selected>10%</option><option value="15">15%</option></select></div>
+      </div>
+      <button class="calc-btn" onclick="calcBrick()">▶ CALCULATE</button>
+      <div class="result-box" id="res-brick">
+        <div class="result-head"><div class="status-dot"></div><span id="br-status-txt">RESULT</span></div>
+        <div class="result-rows">
+          <div class="result-row"><span class="r-label">Wall Volume</span><span class="r-val" id="br-vol">—</span></div>
+          <div class="result-row"><span class="r-label">Bricks (base)</span><span class="r-val" id="br-base">—</span></div>
+          <div class="result-row"><span class="r-label">Bricks with Wastage</span><span class="r-val highlight" id="br-nos">—</span></div>
+          <div class="result-row"><span class="r-label">Cement Bags</span><span class="r-val" id="br-cement">—</span></div>
+          <div class="result-row"><span class="r-label">Sand</span><span class="r-val" id="br-sand">—</span></div>
+          <div class="result-row"><span class="r-label">Wall Adequacy</span><span class="r-val" id="br-check">—</span></div>
+        </div>
+      </div>
+      <div class="checks" id="br-checks" style="display:none"></div>
+      <div class="formula-note">Brick: 190×90×90mm + 10mm mortar joint | IS 2212: 1:4 min for external walls</div>
+    </div>
+  </div>
+
+  <!-- 5. TILE -->
+  <div class="calc-card" id="calc-tile">
+    <div class="calc-head"><div class="calc-head-icon">🟫</div><div><h2>Tile Quantity Calculator</h2><p>Floor or wall tiles with wastage</p></div></div>
+    <div class="calc-body">
+      <div class="fields-grid">
+        <div class="field"><label>Room Length (m)</label><input type="number" id="ti-l" value="4" step="0.01"></div>
+        <div class="field"><label>Room Width (m)</label><input type="number" id="ti-w" value="3" step="0.01"></div>
+        <div class="field"><label>Tile Size</label><select id="ti-size"><option value="0.09">300×300 mm</option><option value="0.16" selected>400×400 mm</option><option value="0.25">500×500 mm</option><option value="0.36">600×600 mm</option><option value="0.64">800×800 mm</option><option value="1.44">1200×1200 mm</option></select></div>
+        <div class="field"><label>Wastage %</label><select id="ti-waste"><option value="5">5% – Simple rect</option><option value="10" selected>10% – Standard</option><option value="15">15% – Diagonal pattern</option><option value="20">20% – Complex cuts</option></select></div>
+      </div>
+      <button class="calc-btn" onclick="calcTile()">▶ CALCULATE TILES</button>
+      <div class="result-box" id="res-tile">
+        <div class="result-head"><div class="status-dot"></div><span id="ti-status-txt">RESULT</span></div>
+        <div class="result-rows">
+          <div class="result-row"><span class="r-label">Floor Area</span><span class="r-val" id="ti-area">—</span></div>
+          <div class="result-row"><span class="r-label">Tiles (base count)</span><span class="r-val" id="ti-base">—</span></div>
+          <div class="result-row"><span class="r-label">Tiles with Wastage</span><span class="r-val highlight" id="ti-total">—</span></div>
+          <div class="result-row"><span class="r-label">Keep as buffer (3%)</span><span class="r-val" id="ti-extra">—</span></div>
+        </div>
+      </div>
+      <div class="formula-note">Always buy 1 extra box | Match lot numbers to avoid shade variation</div>
+    </div>
+  </div>
+
+  <!-- 6. PLASTER -->
+  <div class="calc-card" id="calc-plaster">
+    <div class="calc-head"><div class="calc-head-icon">🪣</div><div><h2>Plaster Quantity Calculator</h2><p>Cement & sand for wall plastering — IS 2395</p></div></div>
+    <div class="calc-body">
+      <div class="fields-grid">
+        <div class="field"><label>Area (m²)</label><input type="number" id="pl-area" value="20" step="0.1"></div>
+        <div class="field"><label>Coat & Thickness</label><select id="pl-th"><option value="6">6mm – Skim coat</option><option value="12" selected>12mm – Internal</option><option value="20">20mm – External</option></select></div>
+        <div class="field"><label>Mortar Ratio</label><select id="pl-ratio"><option value="1:3">1:3 – External/Wet area</option><option value="1:4" selected>1:4 – Standard Internal</option><option value="1:6">1:6 – Internal Non-structural</option></select></div>
+      </div>
+      <button class="calc-btn" onclick="calcPlaster()">▶ CALCULATE</button>
+      <div class="result-box" id="res-plaster">
+        <div class="result-head"><div class="status-dot"></div><span id="pl-status-txt">RESULT</span></div>
+        <div class="result-rows">
+          <div class="result-row"><span class="r-label">Wet Volume</span><span class="r-val" id="pl-wet">—</span></div>
+          <div class="result-row"><span class="r-label">Dry Volume (×1.35)</span><span class="r-val" id="pl-dry">—</span></div>
+          <div class="result-row"><span class="r-label">Cement Bags (50 kg)</span><span class="r-val highlight" id="pl-cement">—</span></div>
+          <div class="result-row"><span class="r-label">Sand</span><span class="r-val" id="pl-sand">—</span></div>
+          <div class="result-row"><span class="r-label">Ratio Advice</span><span class="r-val" id="pl-advice">—</span></div>
+        </div>
+      </div>
+      <div class="formula-note">IS 2395: External plaster min 20mm in 2 coats | Dry = Wet × 1.35 | Add 20% for uneven walls</div>
+    </div>
+  </div>
+
+  <!-- 7. PAINT -->
+  <div class="calc-card" id="calc-paint">
+    <div class="calc-head"><div class="calc-head-icon">🎨</div><div><h2>Paint Quantity Calculator</h2><p>Litres & buckets needed for walls + ceiling</p></div></div>
+    <div class="calc-body">
+      <div class="fields-grid">
+        <div class="field"><label>Wall + Ceiling Area (m²)</label><input type="number" id="pa-area" value="50" step="0.1"></div>
+        <div class="field"><label>Number of Coats</label><select id="pa-coats"><option value="1">1 Coat</option><option value="2" selected>2 Coats (Standard)</option><option value="3">3 Coats (Dark change)</option></select></div>
+        <div class="field"><label>Paint Type / Coverage</label><select id="pa-cov"><option value="8">8 m²/L – Exterior/Textured</option><option value="10">10 m²/L – Economy Emulsion</option><option value="12" selected>12 m²/L – Premium Emulsion</option><option value="14">14 m²/L – Luxury</option></select></div>
+        <div class="field"><label>Deduct Doors/Windows</label><select id="pa-deduct"><option value="0">None</option><option value="5" selected>~5% Typical room</option><option value="10">~10% Large openings</option></select></div>
+      </div>
+      <button class="calc-btn" onclick="calcPaint()">▶ CALCULATE</button>
+      <div class="result-box" id="res-paint">
+        <div class="result-head"><div class="status-dot"></div><span id="pa-status-txt">RESULT</span></div>
+        <div class="result-rows">
+          <div class="result-row"><span class="r-label">Net Paintable Area</span><span class="r-val" id="pa-net">—</span></div>
+          <div class="result-row"><span class="r-label">Paint Required</span><span class="r-val highlight" id="pa-ltr">—</span></div>
+          <div class="result-row"><span class="r-label">20L Buckets</span><span class="r-val" id="pa-buck20">—</span></div>
+          <div class="result-row"><span class="r-label">4L Tins (for touch-up)</span><span class="r-val" id="pa-buck4">—</span></div>
+        </div>
+      </div>
+      <div class="formula-note">New walls: add 1 primer coat | Buy extra — color matching is difficult later</div>
+    </div>
+  </div>
+
+  <!-- 8. AREA -->
+  <div class="calc-card" id="calc-area">
+    <div class="calc-head"><div class="calc-head-icon">📐</div><div><h2>Carpet / Built-up Area Converter</h2><p>RERA compliant area conversion</p></div></div>
+    <div class="calc-body">
+      <div class="fields-grid">
+        <div class="field"><label>Input Area (sq ft)</label><input type="number" id="ar-val" value="1000"></div>
+        <div class="field"><label>Input Type</label><select id="ar-type"><option value="carpet">Carpet Area</option><option value="builtup">Built-up Area</option><option value="super">Super Built-up Area</option></select></div>
+      </div>
+      <button class="calc-btn" onclick="calcArea()">▶ CONVERT</button>
+      <div class="result-box" id="res-area">
+        <div class="result-head"><div class="status-dot"></div><span id="ar-status-txt">RESULT</span></div>
+        <div class="result-rows">
+          <div class="result-row"><span class="r-label">Carpet Area</span><span class="r-val highlight" id="ar-carpet">—</span></div>
+          <div class="result-row"><span class="r-label">Built-up Area</span><span class="r-val" id="ar-builtup">—</span></div>
+          <div class="result-row"><span class="r-label">Super Built-up Area</span><span class="r-val" id="ar-super">—</span></div>
+          <div class="result-row"><span class="r-label">In Square Meters</span><span class="r-val" id="ar-sqm">—</span></div>
+          <div class="result-row"><span class="r-label">In Square Yards</span><span class="r-val" id="ar-sqyd">—</span></div>
+          <div class="result-row"><span class="r-label">RERA Status</span><span class="r-val" id="ar-rera">—</span></div>
+        </div>
+      </div>
+      <div class="formula-note">Carpet→Built-up: ×1.15 | Built-up→Super: ×1.25 | RERA 2016: Builders must quote Carpet Area</div>
+    </div>
+  </div>
+
+  <!-- 9. STAIRCASE -->
+  <div class="calc-card" id="calc-stair">
+    <div class="calc-head"><div class="calc-head-icon">🪜</div><div><h2>Staircase Design Calculator</h2><p>IS 456 / NBC code check — Riser, Tread, 2R+T rule</p></div></div>
+    <div class="calc-body">
+      <div class="fields-grid">
+        <div class="field"><label>Floor-to-Floor Height (mm)</label><input type="number" id="st2-h" value="3000" step="50"></div>
+        <div class="field"><label>Proposed Riser (mm)</label><input type="number" id="st2-r" value="150" step="5"></div>
+        <div class="field"><label>Tread Width (mm)</label><input type="number" id="st2-t" value="270" step="5"></div>
+        <div class="field"><label>Stair Use</label><select id="st2-use"><option value="res">Residential</option><option value="com">Commercial / Public</option></select></div>
+      </div>
+      <button class="calc-btn" onclick="calcStair()">▶ DESIGN CHECK</button>
+      <div class="result-box" id="res-stair">
+        <div class="result-head"><div class="status-dot"></div><span id="st2-status-txt">DESIGN STATUS</span></div>
+        <div class="result-rows">
+          <div class="result-row"><span class="r-label">Number of Risers</span><span class="r-val highlight" id="st2-nos">—</span></div>
+          <div class="result-row"><span class="r-label">Actual Riser Height</span><span class="r-val" id="st2-actualR">—</span></div>
+          <div class="result-row"><span class="r-label">Number of Treads</span><span class="r-val" id="st2-trd">—</span></div>
+          <div class="result-row"><span class="r-label">Going Length (horizontal)</span><span class="r-val" id="st2-go">—</span></div>
+          <div class="result-row"><span class="r-label">2R + T (must be 600–650)</span><span class="r-val" id="st2-rule">—</span></div>
+        </div>
+      </div>
+      <div class="checks" id="st2-checks" style="display:none"></div>
+      <div class="formula-note">NBC: 2R+T = 600–650mm | Residential: R ≤ 175mm, T ≥ 250mm | Commercial: R ≤ 150mm, T ≥ 300mm</div>
+    </div>
+  </div>
+
+  <!-- 10. EXCAVATION -->
+  <div class="calc-card" id="calc-excavation">
+    <div class="calc-head"><div class="calc-head-icon">🚜</div><div><h2>Excavation Volume Calculator</h2><p>Earthwork quantity + safety check — IS 1200</p></div></div>
+    <div class="calc-body">
+      <div class="fields-grid">
+        <div class="field"><label>Shape</label><select id="ex-shape" onchange="toggleExcShape()"><option value="rect">Rectangular Pit</option><option value="trap">Trapezoidal (Sloped)</option></select></div>
+        <div class="field"><label>Length (m)</label><input type="number" id="ex-l" value="10" step="0.1"></div>
+        <div class="field"><label>Top Width (m)</label><input type="number" id="ex-w" value="4" step="0.1"></div>
+        <div class="field" id="ex-bw-wrap" style="display:none"><label>Bottom Width (m)</label><input type="number" id="ex-bw" value="2" step="0.1"></div>
+        <div class="field"><label>Depth (m)</label><input type="number" id="ex-d" value="1.5" step="0.1"></div>
+        <div class="field"><label>Soil Type</label><select id="ex-soil"><option value="1.25">Normal Soil (25% swell)</option><option value="1.3">Hard Soil (30% swell)</option><option value="1.5">Rock (50% swell)</option></select></div>
+      </div>
+      <button class="calc-btn" onclick="calcExcavation()">▶ CALCULATE VOLUME</button>
+      <div class="result-box" id="res-ex">
+        <div class="result-head"><div class="status-dot"></div><span id="ex-status-txt">RESULT</span></div>
+        <div class="result-rows">
+          <div class="result-row"><span class="r-label">Bank Volume (in-situ)</span><span class="r-val highlight" id="ex-vol">—</span></div>
+          <div class="result-row"><span class="r-label">Loose Volume (for trucks)</span><span class="r-val" id="ex-loose">—</span></div>
+          <div class="result-row"><span class="r-label">Truck Loads (10m³ truck)</span><span class="r-val" id="ex-trucks">—</span></div>
+          <div class="result-row"><span class="r-label">Depth Safety Status</span><span class="r-val" id="ex-depth-check">—</span></div>
+        </div>
+      </div>
+      <div class="formula-note">IS 1200: Depth &gt; 1.5m needs shoring | Depth &gt; 3m = Safety officer mandatory</div>
+    </div>
+  </div>
+
+  <div class="ad-rect">GOOGLE ADSENSE 300×250 — Paste your ad code here</div>
+
+</div>
+
+<footer>
+  <strong>CivilCalc</strong> — Free Tools for Engineers & Architects in India<br>
+  <span style="margin-top:4px;display:block">Results are approximate. Verify with your structural engineer before execution on site.</span>
+</footer>
+
+<script>
+let current = null;
+function openTool(id) {
+  if (current) { document.getElementById('calc-'+current).classList.remove('open'); document.querySelector(`[onclick="openTool('${current}')"]`).classList.remove('active'); }
+  if (current===id){current=null;return;}
+  current=id;
+  document.getElementById('calc-'+id).classList.add('open');
+  document.querySelector(`[onclick="openTool('${id}')"]`).classList.add('active');
+  setTimeout(()=>document.getElementById('calc-'+id).scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+function setResult(boxId,txtId,level,msg){
+  const b=document.getElementById(boxId); b.className='result-box show '+level;
+  const icons={ok:'✅',warn:'⚠️',err:'❌'};
+  document.getElementById(txtId).textContent=icons[level]+' '+msg;
+}
+function stag(level,txt){return`<span class="stag ${level}">${txt}</span>`;}
+function showChecks(id,items){
+  const el=document.getElementById(id);el.style.display='flex';
+  el.innerHTML=items.map(i=>`<div class="check-item ${i.pass?'pass':'fail'}">${i.pass?'✓':'✗'} ${i.label}</div>`).join('');
+}
+function fmt(n,d=2){return parseFloat(n).toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});}
+
+function calcBBS(){
+  const d=+document.getElementById('bbs-dia').value;
+  const nos=+document.getElementById('bbs-nos').value;
+  const len=+document.getElementById('bbs-len').value;
+  const wpm=(d*d)/162, totLen=nos*len, wt=wpm*totLen;
+  document.getElementById('bbs-wpm').textContent=fmt(wpm,3)+' kg/m';
+  document.getElementById('bbs-totlen').textContent=fmt(totLen)+' m';
+  document.getElementById('bbs-wt').textContent=fmt(wt)+' kg';
+  const checks=[{pass:d>=8,label:'Min bar dia ≥ 8mm'},{pass:len<=12,label:'Bar length ≤ 12m (standard)'},{pass:wt<10000,label:'Total < 10,000 kg (1 truck)'}];
+  setResult('res-bbs','bbs-status-txt',checks.every(c=>c.pass)?'ok':'warn',checks.every(c=>c.pass)?'ALL CHECKS PASSED':'CHECK WARNINGS');
+  showChecks('bbs-checks',checks);
+}
+
+function calcConcrete(){
+  const l=+document.getElementById('con-l').value,w=+document.getElementById('con-w').value,d=+document.getElementById('con-d').value;
+  const gv=document.getElementById('con-grade').value.split(',');
+  const gradeNum=+gv[0], ratio=gv[1].split(':').map(Number), totalParts=ratio.reduce((a,b)=>a+b,0);
+  const use=document.getElementById('con-use').value;
+  const wet=l*w*d, dry=wet*1.54;
+  const cement_m3=(ratio[0]/totalParts)*dry, bags=Math.ceil((cement_m3*1440)/50);
+  const sand=(ratio[1]/totalParts)*dry, agg=(ratio[2]/totalParts)*dry;
+  document.getElementById('con-wet').textContent=fmt(wet)+' m³';
+  document.getElementById('con-dry').textContent=fmt(dry)+' m³';
+  document.getElementById('con-cement').textContent=bags+' bags';
+  document.getElementById('con-sand').textContent=fmt(sand)+' m³';
+  document.getElementById('con-agg').textContent=fmt(agg)+' m³';
+  const rccOk=use!=='rcc'||gradeNum>=20, fndOk=use!=='foundation'||gradeNum>=15;
+  const gradeOk=rccOk&&fndOk;
+  document.getElementById('con-grade-check').innerHTML=!rccOk?stag('err','IS 456: Min M20 for RCC — UPGRADE'):!fndOk?stag('warn','Min M15 for foundations'):stag('ok','Grade OK for use');
+  const checks=[{pass:gradeOk,label:'Grade adequate for use'},{pass:d>=0.1,label:'Thickness ≥ 100mm'}];
+  setResult('res-con','con-status-txt',gradeOk?'ok':'err',gradeOk?'MATERIALS CALCULATED':'GRADE MISMATCH');
+  showChecks('con-checks',checks);
+}
+
+function toggleSteelFields(){
+  const t=document.getElementById('st-type').value;
+  document.getElementById('st-d-wrap').style.display=(t==='round'||t==='square')?'block':'none';
+  document.getElementById('st-w-wrap').style.display=t==='flat'?'block':'none';
+  document.getElementById('st-t-wrap').style.display=t==='flat'?'block':'none';
+  document.getElementById('st-od-wrap').style.display=t==='pipe'?'block':'none';
+  document.getElementById('st-thick-wrap').style.display=t==='pipe'?'block':'none';
+  document.getElementById('st-d-label').textContent=t==='square'?'Side (mm)':'Diameter (mm)';
+}
+function calcSteel(){
+  const t=document.getElementById('st-type').value,len=+document.getElementById('st-len').value,nos=+document.getElementById('st-nos').value;
+  let a=0;
+  if(t==='round'){const d=+document.getElementById('st-d').value/1000;a=Math.PI*d*d/4;}
+  else if(t==='flat'){a=(+document.getElementById('st-w').value/1000)*(+document.getElementById('st-t').value/1000);}
+  else if(t==='square'){const s=+document.getElementById('st-d').value/1000;a=s*s;}
+  else{const od=+document.getElementById('st-od').value/1000,tk=+document.getElementById('st-thick').value/1000,id=od-2*tk;a=Math.PI*(od*od-id*id)/4;}
+  const wpm=a*7850,tot=wpm*len*nos;
+  document.getElementById('st-wpm').textContent=fmt(wpm,3)+' kg/m';
+  document.getElementById('st-wt').textContent=fmt(tot)+' kg';
+  document.getElementById('st-ton').textContent=fmt(tot/1000,3)+' MT';
+  setResult('res-steel','st-status-txt','ok','WEIGHT CALCULATED');
+}
+
+function calcBrick(){
+  const l=+document.getElementById('br-l').value,h=+document.getElementById('br-h').value;
+  const th=+document.getElementById('br-th').value,waste=+document.getElementById('br-waste').value/100;
+  const rp=document.getElementById('br-ratio').value.split(':').map(Number),tp=rp[0]+rp[1];
+  const vol=l*h*th,base=Math.ceil(vol/0.002*0.75),withW=Math.ceil(base*(1+waste));
+  const mortar=vol*0.25*1.35,cement_bags=Math.ceil((rp[0]/tp*mortar*1440)/50),sand=rp[1]/tp*mortar;
+  document.getElementById('br-vol').textContent=fmt(vol)+' m³';
+  document.getElementById('br-base').textContent=base.toLocaleString('en-IN');
+  document.getElementById('br-nos').textContent=withW.toLocaleString('en-IN')+' bricks';
+  document.getElementById('br-cement').textContent=cement_bags+' bags';
+  document.getElementById('br-sand').textContent=fmt(sand)+' m³';
+  const ratio=+document.getElementById('br-ratio').value.split(':')[1];
+  const isExt=th>=0.23, ratioOk=!isExt||ratio<=4, htOk=h<=4.5;
+  document.getElementById('br-check').innerHTML=!ratioOk?stag('err','Use 1:3 or 1:4 for external walls'):!htOk?stag('warn','Height >4.5m: Consult SE'):stag('ok','Wall design OK');
+  const lvl=!ratioOk?'err':!htOk?'warn':'ok';
+  setResult('res-brick','br-status-txt',lvl,lvl==='ok'?'ALL OK':lvl==='warn'?'CHECK HEIGHT':'RATIO ISSUE');
+  showChecks('br-checks',[{pass:ratioOk,label:'Mortar ratio adequate'},{pass:htOk,label:'Height ≤ 4.5m'},{pass:th>=0.115,label:'Min 115mm thickness'}]);
+}
+
+function calcTile(){
+  const l=+document.getElementById('ti-l').value,w=+document.getElementById('ti-w').value;
+  const size=+document.getElementById('ti-size').value,waste=+document.getElementById('ti-waste').value/100;
+  const area=l*w,base=Math.ceil(area/size),total=Math.ceil(base*(1+waste));
+  document.getElementById('ti-area').textContent=fmt(area)+' m²';
+  document.getElementById('ti-base').textContent=base+' tiles';
+  document.getElementById('ti-total').textContent=total+' tiles';
+  document.getElementById('ti-extra').textContent=Math.ceil(total*0.03)+' tiles';
+  setResult('res-tile','ti-status-txt','ok','QUANTITY CALCULATED');
+}
+
+function calcPlaster(){
+  const area=+document.getElementById('pl-area').value,th=+document.getElementById('pl-th').value/1000;
+  const rp=document.getElementById('pl-ratio').value.split(':').map(Number),tp=rp[0]+rp[1];
+  const wet=area*th,dry=wet*1.35,bags=Math.ceil((rp[0]/tp*dry*1440)/50),sand=rp[1]/tp*dry;
+  document.getElementById('pl-wet').textContent=fmt(wet,4)+' m³';
+  document.getElementById('pl-dry').textContent=fmt(dry,4)+' m³';
+  document.getElementById('pl-cement').textContent=bags+' bags';
+  document.getElementById('pl-sand').textContent=fmt(sand,3)+' m³';
+  const isExt=+document.getElementById('pl-th').value>=20,rat=+document.getElementById('pl-ratio').value.split(':')[1];
+  const warn=isExt&&rat>4;
+  document.getElementById('pl-advice').innerHTML=warn?stag('warn','Use 1:3 or 1:4 for external'):stag('ok','Mix ratio OK');
+  setResult('res-plaster','pl-status-txt',warn?'warn':'ok',warn?'CHECK RATIO':'MATERIALS CALCULATED');
+}
+
+function calcPaint(){
+  const area=+document.getElementById('pa-area').value,coats=+document.getElementById('pa-coats').value;
+  const cov=+document.getElementById('pa-cov').value,deduct=+document.getElementById('pa-deduct').value/100;
+  const net=area*(1-deduct),ltr=net*coats/cov;
+  document.getElementById('pa-net').textContent=fmt(net)+' m²';
+  document.getElementById('pa-ltr').textContent=fmt(ltr,1)+' litres';
+  document.getElementById('pa-buck20').textContent=Math.ceil(ltr/20)+' buckets';
+  document.getElementById('pa-buck4').textContent=Math.ceil((ltr%20)/4)||1+' tins';
+  setResult('res-paint','pa-status-txt','ok','QUANTITY CALCULATED');
+}
+
+function calcArea(){
+  const val=+document.getElementById('ar-val').value,type=document.getElementById('ar-type').value;
+  let carpet,builtup,superb;
+  if(type==='carpet'){carpet=val;builtup=carpet*1.15;superb=builtup*1.25;}
+  else if(type==='builtup'){builtup=val;carpet=builtup/1.15;superb=builtup*1.25;}
+  else{superb=val;builtup=superb/1.25;carpet=builtup/1.15;}
+  document.getElementById('ar-carpet').textContent=fmt(carpet,0)+' sq ft';
+  document.getElementById('ar-builtup').textContent=fmt(builtup,0)+' sq ft';
+  document.getElementById('ar-super').textContent=fmt(superb,0)+' sq ft';
+  document.getElementById('ar-sqm').textContent=fmt(carpet*0.0929,2)+' m²';
+  document.getElementById('ar-sqyd').textContent=fmt(carpet/9,1)+' sq yd';
+  document.getElementById('ar-rera').innerHTML=stag('ok','RERA: Builder must quote Carpet Area');
+  setResult('res-area','ar-status-txt','ok','CONVERSION DONE');
+}
+
+function calcStair(){
+  const H=+document.getElementById('st2-h').value,R=+document.getElementById('st2-r').value,T=+document.getElementById('st2-t').value;
+  const use=document.getElementById('st2-use').value;
+  const nos=Math.round(H/R),actualR=H/nos,treads=nos-1,going=(treads*T)/1000,rule=2*actualR+T;
+  const maxR=use==='res'?175:150,minT=use==='res'?250:300;
+  const ruleOk=rule>=600&&rule<=650,riserOk=actualR<=maxR,treadOk=T>=minT;
+  document.getElementById('st2-nos').textContent=nos+' risers';
+  document.getElementById('st2-actualR').textContent=fmt(actualR,1)+' mm';
+  document.getElementById('st2-trd').textContent=treads+' treads';
+  document.getElementById('st2-go').textContent=fmt(going)+' m';
+  const re=document.getElementById('st2-rule');
+  re.textContent=fmt(rule,0)+' mm';re.className='r-val '+(ruleOk?'ok-val':'err-val');
+  const checks=[{pass:ruleOk,label:'2R+T = '+Math.round(rule)+'mm (600–650)'},{pass:riserOk,label:'Riser '+Math.round(actualR)+'mm ≤ '+maxR+'mm'},{pass:treadOk,label:'Tread '+T+'mm ≥ '+minT+'mm'},{pass:nos<=20,label:'Max 20 steps per flight'}];
+  const allOk=checks.every(c=>c.pass),anyFail=checks.filter(c=>!c.pass).length;
+  setResult('res-stair','st2-status-txt',allOk?'ok':anyFail>1?'err':'warn',allOk?'DESIGN OK — MEETS CODE':anyFail>1?'REDESIGN REQUIRED':'MINOR CORRECTION NEEDED');
+  showChecks('st2-checks',checks);
+}
+
+function toggleExcShape(){document.getElementById('ex-bw-wrap').style.display=document.getElementById('ex-shape').value==='trap'?'block':'none';}
+function calcExcavation(){
+  const shape=document.getElementById('ex-shape').value,l=+document.getElementById('ex-l').value;
+  const w=+document.getElementById('ex-w').value,d=+document.getElementById('ex-d').value,swell=+document.getElementById('ex-soil').value;
+  let vol=shape==='rect'?l*w*d:((w+(+document.getElementById('ex-bw').value||w))/2)*d*l;
+  const loose=vol*swell,trucks=Math.ceil(loose/10);
+  document.getElementById('ex-vol').textContent=fmt(vol)+' m³';
+  document.getElementById('ex-loose').textContent=fmt(loose)+' m³';
+  document.getElementById('ex-trucks').textContent=trucks+' loads';
+  document.getElementById('ex-depth-check').innerHTML=d>3?stag('err','Depth >3m: Shoring + Safety Officer mandatory'):d>1.5?stag('warn','Depth >1.5m: Slope/Shoring required (IS 1200)'):stag('ok','Depth ≤ 1.5m — OK');
+  setResult('res-ex','ex-status-txt',d>3?'err':d>1.5?'warn':'ok',d>3?'SAFETY CRITICAL':d>1.5?'SAFETY NOTICE':'VOLUME CALCULATED');
+}
+
+openTool('bbs');
+</script>
+</body>
+</html>
